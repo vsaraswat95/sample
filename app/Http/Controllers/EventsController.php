@@ -9,7 +9,6 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class EventsController extends BaseController
 {
@@ -103,7 +102,8 @@ class EventsController extends BaseController
      */
 
     public function getEventsWithWorkshops() {
-        return Event::with(['workshops'])->get()->toArray();
+        $data = Event::with(['workshops'])->get()->toArray();
+        return response()->json($data);
     }
 
 
@@ -182,8 +182,10 @@ class EventsController extends BaseController
      */
 
     public function getFutureEventsWithWorkshops() {
-        return Event::with(['workshops'])->whereHas('workshops', function($q) {
+        $data =  Event::with(['workshops'])->whereHas('workshops', function($q) {
             $q->where('start', '>',  Carbon::now()->toDateTimeString());
         })->get()->toArray();
+
+        return response()->json($data);
     }
 }

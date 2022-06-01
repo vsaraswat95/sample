@@ -94,7 +94,34 @@ class MenuController extends BaseController
     ]
      */
 
+    private function loadChild($all_menu_items, $index) {
+        $data = [];
+        $current_id = $all_menu_items[$index]['id'];
+        $child = array_filter($all_menu_items, function($v) use($current_id) {
+            return $v['parent_id'] == $current_id;
+        });
+        if (count($child) == 0) {
+            return $data;
+        } else {
+            foreach ($child as $key => $item) {
+                $item['children'] = $this->loadChild($all_menu_items, $key);
+                array_push($data, $item);
+            }
+        }
+        return $data;
+    }
+
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        $all_menu_items = MenuItem::get()->toArray();
+        $final_array = [];
+        $base_menu_items = array_filter($all_menu_items, function($v) {
+            return is_null($v['parent_id']);
+        });
+        foreach ($base_menu_items as $key => $value) {
+            $temp = $value;
+            $temp['children'] = $this->loadChild($all_menu_items, $key);
+            array_push($final_array, $temp);
+        }
+        return response()->json($final_array);
     }
 }
